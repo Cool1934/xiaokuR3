@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帖子浏览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 780px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h1::before {
+            content: "📄";
+            font-size: 2rem;
+        }
+
+        .subhead {
+            color: #64748b;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            border-left: 3px solid #94a3b8;
+            padding-left: 1rem;
+        }
+
+        /* ========== 帖子卡片 ========== */
+        .post {
+            background: white;
+            border-radius: 24px;
+            padding: 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            border: 1px solid #e9eef3;
+        }
+
+        .post:hover {
+            box-shadow: 0 16px 28px rgba(0, 0, 0, 0.06);
+            border-color: #d0dae6;
+        }
+
+        .post-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0b1e33;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+
+        .post-content {
+            color: #1e293b;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .post-content p {
+            margin-bottom: 1rem;
+        }
+
+        .post-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ========== 帖子图片（点击可放大） ========== */
+        .post-image {
+            margin: 1.4rem 0 0.5rem;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            cursor: zoom-in;
+        }
+
+        .post-image img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 480px;
+            object-fit: cover;
+            transition: transform 0.25s ease, filter 0.2s;
+            background: #f8fafc;
+        }
+
+        .post-image:hover img {
+            transform: scale(1.01);
+            filter: brightness(1.02);
+        }
+
+        .image-caption {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .image-caption::before {
+            content: "📷";
+            font-style: normal;
+            font-size: 0.9rem;
+        }
+
+        /* ========== 图片放大模态框 ========== */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .lightbox-content {
+            max-width: 92vw;
+            max-height: 90vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeScale 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+        }
+
+        @keyframes fadeScale {
+            0% { transform: scale(0.96); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 85vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 18px;
+            box-shadow: 0 30px 50px -12px rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            background: #1e293b;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -48px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: background 0.2s, transform 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            line-height: 1;
+            font-weight: 300;
+            padding-bottom: 3px;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .lightbox-caption {
+            margin-top: 1rem;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            max-width: 80%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hint {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin: 1.5rem 0 0.5rem;
+            padding: 0.75rem;
+            background: #eef2f6;
+            border-radius: 40px;
+            display: inline-block;
+            border: 1px solid #dce3eb;
+        }
+
+        .hint i {
+            font-style: normal;
+            background: #ffffff;
+            padding: 0.15rem 0.6rem;
+            border-radius: 30px;
+            margin-left: 6px;
+            color: #3b5e7b;
+            font-weight: 500;
+            font-size: 0.8rem;
+            border: 1px solid #cbdae9;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #eef2f6; }
+        ::-webkit-scrollbar-thumb { background: #b9c9db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9aafc4; }
+
+        @media (max-width: 600px) {
+            body { padding: 1rem 0.75rem; }
+            .post { padding: 1.3rem; border-radius: 18px; }
+            .post-title { font-size: 1.3rem; }
+            .post-content { font-size: 0.98rem; }
+            .lightbox-close { top: -44px; width: 38px; height: 38px; font-size: 1.4rem; }
+            .lightbox-content img { max-height: 75vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>帖子浏览</h1>
+        <div class="subhead">点击图片可放大观看</div>
+
+        <!-- ============================================================ -->
+        <!-- 在下面复制 .post 块来添加新帖子                               -->
+        <!-- ============================================================ -->
+
+
+        <!-- 帖子 1 -->
+        <div class="post">
+            <h2 class="post-title">这是我的第一个帖子</h2>
+            <div class="post-content">
+                <p>你们好</p>
+                <p>小酷nb666</p>
+            </div>
+            <div class="post-image" data-caption="小酷1934">
+                <img src="https://picsum.photos/id/1015/800/500" alt="ku">
+            </div>
+            <div class="image-caption">tt语音</div>
+        </div>
+
+
+
+
+      
+
+        <!-- ============================================================ -->
+        <!-- 继续添加新帖子：复制上面的 <div class="post">...</div> 整块     -->
+        <!-- ============================================================ -->
+
+
+        <div style="display: flex; justify-content: center; margin-top: 1rem;">
+            <div class="hint">
+                点击任意图片可放大观看 <i>试试看</i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片放大模态框 -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightboxClose" aria-label="关闭">&times;</button>
+            <img id="lightboxImg" src="" alt="放大图片">
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const imageContainers = document.querySelectorAll('.post-image');
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            const lightboxCaption = document.getElementById('lightboxCaption');
+            const lightboxClose = document.getElementById('lightboxClose');
+
+            function openLightbox(imgSrc, captionText) {
+                lightboxImg.src = imgSrc;
+                lightboxCaption.textContent = captionText || '图片';
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+                setTimeout(() => {
+                    if (!lightbox.classList.contains('active')) {
+                        lightboxImg.src = '';
+                    }
+                }, 300);
+            }
+
+            imageContainers.forEach(container => {
+                container.addEventListener('click', function() {
+                    const img = this.querySelector('img');
+                    if (!img) return;
+
+                    let caption = this.dataset.caption;
+                    if (!caption) {
+                        const nextSibling = this.nextElementSibling;
+                        if (nextSibling && nextSibling.classList.contains('image-caption')) {
+                            caption = nextSibling.textContent.trim();
+                        } else {
+                            caption = img.alt || '图片';
+                        }
+                    }
+                    openLightbox(img.src, caption);
+                });
+            });
+
+            lightboxClose.addEventListener('click', closeLightbox);
+
+            lightbox.addEventListener('click', function(e) {
+                if (e.target === lightbox) closeLightbox();
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+                    closeLightbox();
+                }
+            });
+
+            document.querySelectorAll('.post-image img').forEach(img => {
+                img.addEventListener('dragstart', (e) => e.preventDefault());
+            });
+        })();
+    </script>
+</body>
+</html>
