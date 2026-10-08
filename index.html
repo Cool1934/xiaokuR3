@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>聊天室 · 登录 & 发送消息</title>
+  <title>聊天室 · 登录 / 注册 / 发送消息</title>
   <style>
     * {
       margin: 0;
@@ -104,38 +104,70 @@
       background: #ffe9e9;
     }
 
-    /* 登录区域 */
-    .login-section {
+    /* 登录/注册区域 */
+    .auth-section {
       padding: 2.5rem 2rem 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    .login-section.hidden {
+    .auth-section.hidden {
       display: none;
     }
 
-    .login-icon {
+    .auth-icon {
       font-size: 3rem;
       margin-bottom: 0.5rem;
       opacity: 0.8;
     }
 
-    .login-title {
+    .auth-title {
       font-size: 1.4rem;
       font-weight: 600;
       color: #0b2b44;
       margin-bottom: 0.3rem;
     }
 
-    .login-sub {
+    .auth-sub {
       color: #5f84a0;
       font-size: 0.9rem;
       margin-bottom: 2rem;
     }
 
-    .login-form {
+    /* 切换标签（登录/注册） */
+    .auth-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: #e7f0f8;
+      border-radius: 40px;
+      padding: 0.3rem;
+      margin-bottom: 1.8rem;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: none;
+      background: transparent;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #4a7392;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: white;
+      color: #1e5b8a;
+      box-shadow: 0 4px 10px -4px rgba(0, 20, 40, 0.15);
+      font-weight: 600;
+    }
+
+    .auth-form {
       width: 100%;
       max-width: 340px;
     }
@@ -177,14 +209,18 @@
       font-weight: 300;
     }
 
-    .btn-primary {
-      width: 100%;
-      background: #1e5b8a;
-      border: none;
+    /* 按钮组 */
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn {
+      flex: 1;
       padding: 0.9rem 1.5rem;
       font-size: 1rem;
       font-weight: 600;
-      color: white;
       border-radius: 40px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -192,8 +228,13 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #1e5b8a;
+      color: white;
       box-shadow: 0 8px 16px -6px rgba(20, 70, 110, 0.3);
-      margin-top: 0.5rem;
     }
 
     .btn-primary:hover {
@@ -203,6 +244,21 @@
     }
 
     .btn-primary:active {
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      background: #e7f0f8;
+      color: #1e5b8a;
+      border: 2px solid #c6dae8;
+    }
+
+    .btn-secondary:hover {
+      background: #d8e8f4;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary:active {
       transform: translateY(1px);
     }
 
@@ -413,7 +469,7 @@
         font-size: 1.2rem;
       }
 
-      .login-section {
+      .auth-section {
         padding: 2rem 1.2rem 1.5rem;
       }
 
@@ -432,6 +488,10 @@
       .btn-send {
         width: 100%;
         justify-content: center;
+      }
+
+      .btn-group {
+        flex-direction: column;
       }
     }
   </style>
@@ -455,26 +515,39 @@
     </div>
   </div>
 
-  <!-- ================= 登录区域 ================= -->
-  <div class="login-section" id="loginSection">
-    <div class="login-icon">🔐</div>
-    <div class="login-title">登录聊天室</div>
-    <div class="login-sub">输入账号密码验证身份，账号将作为聊天昵称</div>
+  <!-- ================= 登录 / 注册 区域 ================= -->
+  <div class="auth-section" id="authSection">
+    <div class="auth-icon" id="authIcon">🔐</div>
+    <div class="auth-title" id="authTitle">登录聊天室</div>
+    <div class="auth-sub" id="authSub">输入账号密码验证身份，账号将作为聊天昵称</div>
 
-    <div id="loginMessage"></div>
+    <!-- 切换标签 -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" type="button">登录</button>
+      <button class="auth-tab" id="tabRegister" type="button">注册</button>
+    </div>
 
-    <form class="login-form" id="loginForm">
+    <div id="authMessage"></div>
+
+    <form class="auth-form" id="authForm">
       <div class="form-group">
-        <label for="loginUsername">账号</label>
-        <input type="text" id="loginUsername" class="input-field" placeholder="例如 admin 或 user" autocomplete="username" required>
+        <label for="authUsername">账号</label>
+        <input type="text" id="authUsername" class="input-field" placeholder="例如 admin 或 user" autocomplete="username" required>
       </div>
       <div class="form-group">
-        <label for="loginPassword">密码</label>
-        <input type="password" id="loginPassword" class="input-field" placeholder="········" autocomplete="current-password" required>
+        <label for="authPassword">密码</label>
+        <input type="password" id="authPassword" class="input-field" placeholder="········" autocomplete="current-password" required>
       </div>
-      <button type="submit" class="btn-primary">
-        <span>→</span> 登录
-      </button>
+      <div class="form-group" id="confirmGroup" style="display: none;">
+        <label for="authConfirm">确认密码</label>
+        <input type="password" id="authConfirm" class="input-field" placeholder="再次输入密码" autocomplete="new-password">
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary" id="authSubmitBtn">
+          <span>→</span> 登录
+        </button>
+      </div>
     </form>
 
     <div style="margin-top: 1.5rem; font-size: 0.8rem; color: #698ea8; text-align: center;">
@@ -509,7 +582,7 @@
   <!-- ================= 底部信息 ================= -->
   <div class="app-footer">
     📁 数据存储：<code>users.txt</code> · <code>chat.txt</code> &nbsp;|&nbsp;
-    ⚡ 接口调用：登录验证 & 消息收发
+    ⚡ 接口调用：登录 / 注册 / 消息收发
   </div>
 
 </div>
@@ -517,40 +590,80 @@
 <script>
   // ============================================================
   //  配置：根据你的 PHP 接口文件位置调整
-  //  假设 login.php 和 chat.php 与当前 HTML 在同一目录
-  //  如果你的接口文件名称不同，请修改下面的路径
   // ============================================================
-  const LOGIN_API = 'login.php';   // 登录接口（验证账号密码）
-  const CHAT_API  = 'chat.php';    // 聊天接口（获取/发送消息）
+  const LOGIN_API    = 'login.php';    // 登录接口
+  const REGISTER_API = 'register.php'; // 注册接口（或与登录同一文件）
+  const CHAT_API     = 'chat.php';     // 聊天接口
 
   // ---------- 全局状态 ----------
-  let currentUser = null;          // 当前登录账号
-  let currentPassword = null;      // 当前登录密码（用于发送消息时验证）
+  let currentUser = null;
+  let currentPassword = null;
+  let currentMode = 'login'; // 'login' 或 'register'
 
   // ---------- DOM 元素 ----------
-  const loginSection = document.getElementById('loginSection');
+  const authSection = document.getElementById('authSection');
   const chatSection = document.getElementById('chatSection');
   const userArea = document.getElementById('userArea');
   const currentUserSpan = document.getElementById('currentUser');
   const avatarLetter = document.getElementById('avatarLetter');
-  const loginForm = document.getElementById('loginForm');
+  const authForm = document.getElementById('authForm');
   const sendForm = document.getElementById('sendForm');
   const chatMessages = document.getElementById('chatMessages');
   const messageInput = document.getElementById('messageInput');
-  const loginMessage = document.getElementById('loginMessage');
+  const authMessage = document.getElementById('authMessage');
   const chatMessage = document.getElementById('chatMessage');
   const logoutBtn = document.getElementById('logoutBtn');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const authIcon = document.getElementById('authIcon');
+  const authTitle = document.getElementById('authTitle');
+  const authSub = document.getElementById('authSub');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const confirmGroup = document.getElementById('confirmGroup');
+  const authConfirm = document.getElementById('authConfirm');
+  const authUsername = document.getElementById('authUsername');
+  const authPassword = document.getElementById('authPassword');
 
   // ============================================================
-  //  1. 登录验证 —— 调用登录接口
-  //     接口返回格式约定：JSON { success: true/false, message: "..." }
+  //  1. 切换 登录 / 注册 模式
+  // ============================================================
+  function switchMode(mode) {
+    currentMode = mode;
+    authMessage.innerHTML = '';
+
+    if (mode === 'login') {
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      authIcon.textContent = '🔐';
+      authTitle.textContent = '登录聊天室';
+      authSub.textContent = '输入账号密码验证身份，账号将作为聊天昵称';
+      confirmGroup.style.display = 'none';
+      authConfirm.required = false;
+      authSubmitBtn.innerHTML = '<span>→</span> 登录';
+      authPassword.setAttribute('autocomplete', 'current-password');
+    } else {
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      authIcon.textContent = '📝';
+      authTitle.textContent = '注册新账号';
+      authSub.textContent = '创建账号后即可登录聊天，账号将作为聊天昵称';
+      confirmGroup.style.display = 'block';
+      authConfirm.required = true;
+      authSubmitBtn.innerHTML = '<span>✨</span> 注册';
+      authPassword.setAttribute('autocomplete', 'new-password');
+    }
+  }
+
+  tabLogin.addEventListener('click', () => switchMode('login'));
+  tabRegister.addEventListener('click', () => switchMode('register'));
+
+  // ============================================================
+  //  2. 登录验证
   // ============================================================
   async function verifyLogin(username, password) {
-    // 使用 URLSearchParams 发送 POST 请求
     const params = new URLSearchParams();
     params.append('username', username);
     params.append('password', password);
-    // 如果 login.php 需要 action 参数，可添加：params.append('action', 'login');
 
     try {
       const response = await fetch(LOGIN_API, {
@@ -559,14 +672,11 @@
         body: params
       });
 
-      // 尝试解析 JSON，若接口返回非 JSON 则捕获
       const text = await response.text();
       let data;
       try {
         data = JSON.parse(text);
       } catch (e) {
-        // 如果接口返回的是纯文本或 HTML，根据文本内容判断
-        // 这里做兼容：如果包含 "success" 或 "登录成功" 等关键词
         const isSuccess = text.includes('success') || text.includes('登录成功');
         data = {
           success: isSuccess,
@@ -581,22 +691,52 @@
   }
 
   // ============================================================
-  //  2. 获取聊天记录 —— 调用聊天接口（GET 或 POST）
+  //  3. 注册账号
+  // ============================================================
+  async function registerUser(username, password) {
+    const params = new URLSearchParams();
+    params.append('username', username);
+    params.append('password', password);
+    // 如果注册接口与登录接口是同一个文件，可以加 action 参数
+    params.append('action', 'register');
+
+    try {
+      const response = await fetch(REGISTER_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+      });
+
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        const isSuccess = text.includes('success') || text.includes('注册成功');
+        data = {
+          success: isSuccess,
+          message: isSuccess ? '注册成功' : (text.substring(0, 100) || '注册失败')
+        };
+      }
+      return data;
+    } catch (error) {
+      console.error('注册请求失败:', error);
+      return { success: false, message: '网络错误，请检查接口路径：' + REGISTER_API };
+    }
+  }
+
+  // ============================================================
+  //  4. 获取聊天记录
   // ============================================================
   async function fetchMessages() {
     try {
-      // 使用 GET 请求获取消息列表，接口返回 JSON 格式消息数组
-      // 假设 chat.php?action=get 返回 [{time, user, content}, ...]
       const response = await fetch(CHAT_API + '?action=get');
       const text = await response.text();
       let data;
       try {
         data = JSON.parse(text);
       } catch (e) {
-        // 兼容返回 HTML 的情况：提取纯文本或忽略
-        console.warn('聊天接口返回非 JSON，尝试解析:', text.substring(0, 200));
-        // 如果接口返回的是 HTML（如之前的示例），我们无法直接解析，
-        // 此处返回空数组，并提示使用 JSON 接口
+        console.warn('聊天接口返回非 JSON:', text.substring(0, 200));
         return [];
       }
       return Array.isArray(data) ? data : [];
@@ -607,7 +747,7 @@
   }
 
   // ============================================================
-  //  3. 发送消息 —— 调用聊天接口（POST）
+  //  5. 发送消息
   // ============================================================
   async function sendMessage(username, password, content) {
     const params = new URLSearchParams();
@@ -627,7 +767,6 @@
       try {
         data = JSON.parse(text);
       } catch (e) {
-        // 兼容纯文本返回：根据内容判断是否成功
         const isSuccess = text.includes('success') || text.includes('发送成功') || response.ok;
         data = { success: isSuccess, message: isSuccess ? '发送成功' : '发送失败' };
       }
@@ -639,7 +778,7 @@
   }
 
   // ============================================================
-  //  4. 渲染聊天记录
+  //  6. 渲染聊天记录
   // ============================================================
   function renderMessages(messages) {
     if (!messages || messages.length === 0) {
@@ -649,7 +788,6 @@
 
     let html = '';
     messages.forEach(msg => {
-      // 兼容 msg.time 可能是字符串或数字
       const timeVal = msg.time || msg.timestamp || 0;
       const date = new Date(timeVal * 1000);
       const timeStr = isNaN(date.getTime()) ? '刚刚' : date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
@@ -672,11 +810,9 @@
     });
 
     chatMessages.innerHTML = html;
-    // 滚动到底部
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  // 辅助函数
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -688,10 +824,10 @@
   }
 
   // ============================================================
-  //  5. UI 状态切换
+  //  7. UI 状态切换
   // ============================================================
-  function showLogin() {
-    loginSection.classList.remove('hidden');
+  function showAuth() {
+    authSection.classList.remove('hidden');
     chatSection.classList.add('hidden');
     userArea.style.display = 'none';
     currentUser = null;
@@ -699,7 +835,7 @@
   }
 
   function showChat(username) {
-    loginSection.classList.add('hidden');
+    authSection.classList.add('hidden');
     chatSection.classList.remove('hidden');
     userArea.style.display = 'block';
     currentUserSpan.textContent = username;
@@ -707,46 +843,94 @@
   }
 
   // ============================================================
-  //  6. 登录表单提交
+  //  8. 表单提交（登录 或 注册）
   // ============================================================
-  loginForm.addEventListener('submit', async (e) => {
+  authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
+    const username = authUsername.value.trim();
+    const password = authPassword.value.trim();
+    const confirm = authConfirm.value.trim();
 
     if (!username || !password) {
-      loginMessage.innerHTML = '<div class="message-box error">⚠️ 账号和密码不能为空</div>';
+      authMessage.innerHTML = '<div class="message-box error">⚠️ 账号和密码不能为空</div>';
       return;
     }
 
-    loginMessage.innerHTML = '<div class="message-box info">⏳ 验证中…</div>';
-
-    // 调用登录接口验证
-    const result = await verifyLogin(username, password);
-
-    if (result.success) {
-      // 登录成功
-      currentUser = username;
-      currentPassword = password;  // 保存密码用于发送消息
-
-      loginMessage.innerHTML = '<div class="message-box success">✅ 登录成功，正在进入聊天室…</div>';
-
-      // 延迟一下让用户看到提示
-      setTimeout(async () => {
-        showChat(username);
-        loginMessage.innerHTML = '';
-        // 加载聊天记录
-        const messages = await fetchMessages();
-        renderMessages(messages);
-      }, 500);
-    } else {
-      loginMessage.innerHTML = `<div class="message-box error">❌ ${result.message || '账号或密码错误'}</div>`;
+    // 注册模式下检查确认密码
+    if (currentMode === 'register') {
+      if (!confirm) {
+        authMessage.innerHTML = '<div class="message-box error">⚠️ 请确认密码</div>';
+        return;
+      }
+      if (password !== confirm) {
+        authMessage.innerHTML = '<div class="message-box error">⚠️ 两次输入的密码不一致</div>';
+        return;
+      }
     }
+
+    // 禁用提交按钮
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.style.opacity = '0.6';
+
+    if (currentMode === 'login') {
+      // ---------- 登录 ----------
+      authMessage.innerHTML = '<div class="message-box info">⏳ 验证中…</div>';
+      const result = await verifyLogin(username, password);
+
+      if (result.success) {
+        currentUser = username;
+        currentPassword = password;
+
+        authMessage.innerHTML = '<div class="message-box success">✅ 登录成功，正在进入聊天室…</div>';
+
+        setTimeout(async () => {
+          showChat(username);
+          authMessage.innerHTML = '';
+          const messages = await fetchMessages();
+          renderMessages(messages);
+        }, 500);
+      } else {
+        authMessage.innerHTML = `<div class="message-box error">❌ ${result.message || '账号或密码错误'}</div>`;
+      }
+    } else {
+      // ---------- 注册 ----------
+      authMessage.innerHTML = '<div class="message-box info">⏳ 注册中…</div>';
+      const result = await registerUser(username, password);
+
+      if (result.success) {
+        authMessage.innerHTML = '<div class="message-box success">✅ 注册成功！正在自动登录…</div>';
+
+        // 注册成功后自动登录
+        const loginResult = await verifyLogin(username, password);
+        if (loginResult.success) {
+          currentUser = username;
+          currentPassword = password;
+          setTimeout(async () => {
+            showChat(username);
+            authMessage.innerHTML = '';
+            const messages = await fetchMessages();
+            renderMessages(messages);
+          }, 600);
+        } else {
+          // 注册成功但登录失败（理论上不会），切换到登录模式
+          authMessage.innerHTML = '<div class="message-box success">✅ 注册成功，请手动登录</div>';
+          switchMode('login');
+          authPassword.value = '';
+          authConfirm.value = '';
+        }
+      } else {
+        authMessage.innerHTML = `<div class="message-box error">❌ ${result.message || '注册失败，账号可能已存在'}</div>`;
+      }
+    }
+
+    // 恢复提交按钮
+    authSubmitBtn.disabled = false;
+    authSubmitBtn.style.opacity = '1';
   });
 
   // ============================================================
-  //  7. 发送消息
+  //  9. 发送消息
   // ============================================================
   sendForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -759,48 +943,45 @@
       return;
     }
 
-    // 禁用发送按钮防止重复提交
     const sendBtn = sendForm.querySelector('.btn-send');
     sendBtn.disabled = true;
     sendBtn.style.opacity = '0.6';
 
     chatMessage.innerHTML = '<div class="message-box info">⏳ 发送中…</div>';
 
-    // 调用发送接口
     const result = await sendMessage(currentUser, currentPassword, content);
 
     if (result.success) {
       messageInput.value = '';
-      chatMessage.innerHTML = ''; // 清除提示
-      // 刷新消息列表
+      chatMessage.innerHTML = '';
       const messages = await fetchMessages();
       renderMessages(messages);
     } else {
       chatMessage.innerHTML = `<div class="message-box error">❌ ${result.message || '发送失败'}</div>`;
     }
 
-    // 恢复按钮
     sendBtn.disabled = false;
     sendBtn.style.opacity = '1';
     messageInput.focus();
   });
 
   // ============================================================
-  //  8. 退出登录
+  //  10. 退出登录
   // ============================================================
   logoutBtn.addEventListener('click', () => {
     currentUser = null;
     currentPassword = null;
-    showLogin();
-    // 清空输入框
-    document.getElementById('loginUsername').value = '';
-    document.getElementById('loginPassword').value = '';
-    loginMessage.innerHTML = '';
+    showAuth();
+    authUsername.value = '';
+    authPassword.value = '';
+    authConfirm.value = '';
+    authMessage.innerHTML = '';
     chatMessages.innerHTML = '<div class="empty-tip">✨ 加载消息中…</div>';
+    switchMode('login');
   });
 
   // ============================================================
-  //  9. 自动刷新消息（可选，每 8 秒刷新一次）
+  //  11. 自动刷新消息
   // ============================================================
   let refreshInterval = null;
 
@@ -811,34 +992,17 @@
         const messages = await fetchMessages();
         renderMessages(messages);
       }
-    }, 8000); // 8秒刷新一次
+    }, 8000);
   }
 
-  // 页面加载时启动自动刷新
   window.addEventListener('load', () => {
     startAutoRefresh();
+    switchMode('login');
   });
 
-  // ============================================================
-  //  10. 初始化：尝试从本地恢复登录状态（可选）
-  // ============================================================
-  (function init() {
-    // 如果希望刷新页面后保持登录，可以取消下面注释，使用 localStorage
-    // const savedUser = localStorage.getItem('chat_user');
-    // const savedPass = localStorage.getItem('chat_pass');
-    // if (savedUser && savedPass) {
-    //   verifyLogin(savedUser, savedPass).then(result => {
-    //     if (result.success) {
-    //       currentUser = savedUser;
-    //       currentPassword = savedPass;
-    //       showChat(savedUser);
-    //       fetchMessages().then(renderMessages);
-    //     } else {
-    //       localStorage.removeItem('chat_user');
-    //       localStorage.removeItem('chat_pass');
-    //     }
-    //   });
-    // }
+</script>
+</body>
+</html>
   })();
 
 </script>
